@@ -18,3 +18,5 @@ inside t_race_data. A mutex is a special variable (pthread_mutex_t) that owns a
 2. Add the mutex field to your t_race_data struct:
 	pthread_mutex_t print_mutex;
 
+para comprobar data races, meter en el makefile: (dirección)-fsanitize=address
+ o (para data races) -fsanitize=thread -pthread
