@@ -6,7 +6,7 @@
 /*   By: danielm3 <danielm3@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 11:49:02 by danielm3          #+#    #+#             */
-/*   Updated: 2025/05/31 16:10:21 by danielm3         ###   ########.fr       */
+/*   Updated: 2025/05/31 17:06:07 by danielm3         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ t_runner_data *create_runners_array(t_race_data *racedata)
 	t_runner_data	*runners_array;
 
 	i = 0;
-	runners_array = (t_runner_data *)malloc(racedata.runner_num *
+	runners_array = (t_runner_data *)malloc(racedata->runner_num *
 				sizeof(t_runner_data));
 	if (!runners_array)
 		return (NULL);
