@@ -6,7 +6,7 @@
 /*   By: danielm3 <danielm3@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 11:49:02 by danielm3          #+#    #+#             */
-/*   Updated: 2025/05/31 17:59:38 by danielm3         ###   ########.fr       */
+/*   Updated: 2025/05/31 19:05:24 by danielm3         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ void	racedata_init(t_race_data *racedata, char **argv)
 
 t_runner_data *create_runners_array(t_race_data *racedata)
 {
-	int				id;
 	int				i;
 	t_runner_data	*runners_array;
 
@@ -82,6 +81,7 @@ int	thread_launcher(t_race_data *racedata, t_runner_data *runners_array)
 {
 	pthread_t	*threads;
 	int			i;
+	int			thread_creation_return;
 
 	threads = (pthread_t *)malloc(racedata->runner_num * sizeof(pthread_t));
 	if (!threads)
@@ -89,27 +89,53 @@ int	thread_launcher(t_race_data *racedata, t_runner_data *runners_array)
 	i = 0;
 	while (i < racedata->runner_num)
 	{
-		pthread_create(&threads[i], NULL, runner_routine,
-			 &runners_array[i]);
+		thread_creation_return = pthread_create(&threads[i], 
+			NULL, runner_routine, &runners_array[i]);
+		if (thread_creation_return != 0)
+		{
+			write(2, "Error: pthread_create failed\n", 29);
+			free(threads);
+			return (3);
+		}
 		i++;
 	}
+	i = 0;
+	while (i < racedata->runner_num)
+	{
+		pthread_join(threads[i], NULL);
+		i++;
+	}
+	free(threads);
+	return (0);
 }
 
 int	main(int argc, char **argv)
 {
+	(void) argc;
 	t_race_data 	racedata;
 	t_runner_data	*runners_array;
 	int				return_thread;
-			
+
 	racedata_init(&racedata, argv);
 	pthread_mutex_init(&racedata.print_mutex, NULL);
 	gettimeofday(&racedata.start_time, NULL);
 	srand(racedata.start_time.tv_usec);
-	return_thread = runners_array = create_runners_array(&racedata);
+	runners_array = create_runners_array(&racedata);
 	if (!runners_array)
 		return (1);
-	thread_launcher(&racedata, runners_array);
-	if (return_thread == 2)
+
+	// --- CHANGED: capture return value from thread_launcher, not assign runners_array ---
+	return_thread = thread_launcher(&racedata, runners_array);
+	if (return_thread != 0)
+	{
+		free(runners_array);                   // clean up runner array on error
+		pthread_mutex_destroy(&racedata.print_mutex);
 		return (1);
+	}
+
+	// --- NEW: after threads finish, clean up remaining resources ---
+	free(runners_array);
+	pthread_mutex_destroy(&racedata.print_mutex);
+
 	return (0);
 }
