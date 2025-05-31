@@ -1,0 +1,20 @@
+you’ve defined t_race_data and t_runner_data. Next, we need to add a mutex to 
+t_race_data so threads can safely print and decide who wins without stepping 
+on each other.
+
+Why? Because multiple threads might try to print or set the “winner” at the 
+same time, causing garbled output or two winners.
+
+What you need:
+1. A variable of type pthread_mutex_t inside t_race_data.
+2. Calls to initialize and destroy that mutex in your setup/cleanup.
+
+To allow threads to lock before printing or setting the winner, you need a mutex 
+inside t_race_data. A mutex is a special variable (pthread_mutex_t) that owns a 
+“lock” – only one thread can hold it at a time.
+
+1. Include the pthread header at the top of stagerace.h: 
+	#include <pthread.h>
+2. Add the mutex field to your t_race_data struct:
+	pthread_mutex_t print_mutex;
+
